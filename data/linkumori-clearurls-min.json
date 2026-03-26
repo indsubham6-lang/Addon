@@ -1,8 +1,8 @@
 {
   "metadata": {
     "name": "Linkumori URL Cleaning Rules",
-    "version": "18.03.2026.1224",
-    "buildTimestamp": "2026-03-18T06:54:33.546Z",
+    "version": "26.03.2026.1818",
+    "buildTimestamp": "2026-03-26T18:18:57.085Z",
     "description": "Comprehensive URL cleaning rules for tracking parameter removal and privacy protection",
     "license": "GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.",
     "license-Url": "https://www.gnu.org/licenses/lgpl-3.0.en.html",
@@ -227,6 +227,7 @@
     "metro.co.uk": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?metro\\.co\\.uk","rules":["ito"]},
     "forbes.com": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?forbes\\.com","rules":["sh"]},
     "viglink.com": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?viglink\\.com","redirections":["^https?:\\/\\/redirect\\.viglink\\.com\\/.*?u=([^&]+)"]},
+    "nordwolle.com": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?nordwolle\\.com","rules":["_sc","_sid","_ss"]},
     "salming.com": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?salming\\.com","rules":["trackID"]},
     "paypal": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?paypal\\.","rules":["ppid"]},
     "chegg.com": {"urlPattern":"^https?:\\/\\/(?:[a-z0-9-]+\\.)*?chegg\\.com","rules":["trackid"]},
