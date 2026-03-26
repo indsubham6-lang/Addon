@@ -10,10 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Update commit history for v2.0 (`2026-03-26`, hash: [`e4b0623`](https://github.com/Linkumori/Linkumori-Addon/commit/e4b0623))
+
+## [v2.0] - 2026-03-26
+### Added
+- Introduce clarification further already notice was clear enough (`2026-03-24`, hash: [`fc94edc`](https://github.com/Linkumori/Linkumori-Addon/commit/fc94edc))
+- Introduce permissions.md so user can read what permission extension uses (`2026-03-23`, hash: [`c5d7f14`](https://github.com/Linkumori/Linkumori-Addon/commit/c5d7f14))
+
+### Changed
 - First soft release (`2026-03-23`, hash: [`348cc86`](https://github.com/Linkumori/Linkumori-Addon/commit/348cc86))
 - Generated commit history it since it is first commit any it is not relevent after upload files to github but going formward recipient of this free software may required to read this for understanding subsequent modification (`2026-03-23`, hash: [`2abd74d`](https://github.com/Linkumori/Linkumori-Addon/commit/2abd74d))
+- Update changelog.md (`2026-03-23`, hash: [`316c631`](https://github.com/Linkumori/Linkumori-Addon/commit/316c631))
+- Update changelog.md (`2026-03-23`, hash: [`e38e39e`](https://github.com/Linkumori/Linkumori-Addon/commit/e38e39e))
 - Update commit history (`2026-03-23`, hash: [`024a299`](https://github.com/Linkumori/Linkumori-Addon/commit/024a299))
 - Update commit history (`2026-03-23`, hash: [`2adc33b`](https://github.com/Linkumori/Linkumori-Addon/commit/2adc33b))
+- Update commit history (`2026-03-23`, hash: [`64a2dd5`](https://github.com/Linkumori/Linkumori-Addon/commit/64a2dd5))
+- Update commit history (`2026-03-23`, hash: [`66d58b5`](https://github.com/Linkumori/Linkumori-Addon/commit/66d58b5))
+- Update commit history (`2026-03-23`, hash: [`c61693d`](https://github.com/Linkumori/Linkumori-Addon/commit/c61693d))
 
 ## [1.XX.0] - 2022-XX-XX
 
