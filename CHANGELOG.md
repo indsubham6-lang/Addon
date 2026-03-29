@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Changed
+- Update commit history for v4.0 (`2026-03-29`, hash: [`3fbca9b`](https://github.com/Linkumori/Linkumori-Addon/commit/3fbca9b))
+
+## [v4.0] - 2026-03-29 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/v3.0...v4.0))
+### Changed
+- Update changelog for v3.0 (`2026-03-27`, hash: [`2c6fb43`](https://github.com/Linkumori/Linkumori-Addon/commit/2c6fb43))
 - Update commit history for v3.0 (`2026-03-27`, hash: [`600108f`](https://github.com/Linkumori/Linkumori-Addon/commit/600108f))
 
 ## [v3.0] - 2026-03-27 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/v2.0...v3.0))
