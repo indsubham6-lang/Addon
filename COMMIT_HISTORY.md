@@ -1,11 +1,69 @@
 # Git Commit History
 
-**Generated**: 2026-03-27T04:15:04.093Z
-**Total Commits**: 15
+**Generated**: 2026-03-29T03:27:54.666Z
+**Total Commits**: 18
 
 ---
 
-## Commit 1: release 3.0
+## Commit 1: release 4.0
+
+**Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+**Date**: 2026-03-29 03:27:53 +0000
+**Commit Hash**: `8de65c42769267e65c66dce695d0027008240e9b`
+**Short Hash**: `8de65c4`
+
+### Files Modified
+
+- **Modified**: `data/public_suffix_list.dat`
+- **Modified**: `manifest.json`
+
+### Commit Message
+
+```
+release 4.0
+```
+
+---
+
+## Commit 2: chore: update changelog for v3.0
+
+**Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+**Date**: 2026-03-27 04:15:04 +0000
+**Commit Hash**: `2c6fb4393cc6c420d3f46286de4daf6a06265dc3`
+**Short Hash**: `2c6fb43`
+
+### Files Modified
+
+- **Modified**: `CHANGELOG.md`
+
+### Commit Message
+
+```
+chore: update changelog for v3.0
+```
+
+---
+
+## Commit 3: chore: update commit history for v3.0
+
+**Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+**Date**: 2026-03-27 04:15:04 +0000
+**Commit Hash**: `600108f7f2584c6b0f593f96f1b31797abaa5d79`
+**Short Hash**: `600108f`
+
+### Files Modified
+
+- **Modified**: `COMMIT_HISTORY.md`
+
+### Commit Message
+
+```
+chore: update commit history for v3.0
+```
+
+---
+
+## Commit 4: release 3.0
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-27 04:15:03 +0000
@@ -24,7 +82,7 @@ release 3.0
 
 ---
 
-## Commit 2: chore: update changelog for v2.0
+## Commit 5: chore: update changelog for v2.0
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-26 18:19:12 +0000
@@ -43,7 +101,7 @@ chore: update changelog for v2.0
 
 ---
 
-## Commit 3: chore: update commit history for v2.0
+## Commit 6: chore: update commit history for v2.0
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-26 18:19:12 +0000
@@ -62,7 +120,7 @@ chore: update commit history for v2.0
 
 ---
 
-## Commit 4: release 2.0
+## Commit 7: release 2.0
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-26 18:19:11 +0000
@@ -85,7 +143,7 @@ release 2.0
 
 ---
 
-## Commit 5: chore: update commit history
+## Commit 8: chore: update commit history
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-23 18:57:53 +0000
@@ -104,7 +162,7 @@ chore: update commit history
 
 ---
 
-## Commit 6: add clarification further already notice was clear enough
+## Commit 9: add clarification further already notice was clear enough
 
 **Author**: Linkumori <142691487+subham8907@users.noreply.github.com>
 **Date**: 2026-03-24 00:27:38 +0530
@@ -124,7 +182,7 @@ add clarification further already notice was clear enough
 
 ---
 
-## Commit 7: chore: update commit history
+## Commit 10: chore: update commit history
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-23 16:36:56 +0000
@@ -143,7 +201,7 @@ chore: update commit history
 
 ---
 
-## Commit 8: add permissions.md so user can read what permission extension uses
+## Commit 11: add permissions.md so user can read what permission extension uses
 
 **Author**: Linkumori <142691487+subham8907@users.noreply.github.com>
 **Date**: 2026-03-23 22:06:39 +0530
@@ -162,7 +220,7 @@ add permissions.md so user can read what permission extension uses
 
 ---
 
-## Commit 9: chore: update commit history
+## Commit 12: chore: update commit history
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-23 15:08:26 +0000
@@ -181,7 +239,7 @@ chore: update commit history
 
 ---
 
-## Commit 10: updated changelog.md
+## Commit 13: updated changelog.md
 
 **Author**: Linkumori <142691487+subham8907@users.noreply.github.com>
 **Date**: 2026-03-23 20:38:13 +0530
@@ -200,7 +258,7 @@ updated changelog.md
 
 ---
 
-## Commit 11: chore: update commit history
+## Commit 14: chore: update commit history
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-23 15:05:06 +0000
@@ -219,7 +277,7 @@ chore: update commit history
 
 ---
 
-## Commit 12: updated changelog.md
+## Commit 15: updated changelog.md
 
 **Author**: Linkumori <142691487+subham8907@users.noreply.github.com>
 **Date**: 2026-03-23 20:34:44 +0530
@@ -238,7 +296,7 @@ updated changelog.md
 
 ---
 
-## Commit 13: chore: update commit history
+## Commit 16: chore: update commit history
 
 **Author**: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
 **Date**: 2026-03-23 14:40:05 +0000
@@ -257,7 +315,7 @@ chore: update commit history
 
 ---
 
-## Commit 14: generated commit history it since it is first commit any it is not relevent after upload files to github but going formward recipient of this free software may required to read this for understanding subsequent modification
+## Commit 17: generated commit history it since it is first commit any it is not relevent after upload files to github but going formward recipient of this free software may required to read this for understanding subsequent modification
 
 **Author**: subham mahesh <142691487+subham8907@users.noreply.github.com>
 **Date**: 2026-03-23 16:27:00 +0530
@@ -276,7 +334,7 @@ generated commit history it since it is first commit any it is not relevent afte
 
 ---
 
-## Commit 15: first soft release
+## Commit 18: first soft release
 
 **Author**: subham8907 <cc7642207@gmail.com>
 **Date**: 2026-03-23 15:25:23 +0530
@@ -458,4 +516,4 @@ first soft release
 
 *End of Commit History*
 
-**Generated by Linkumori CLI** - 2026-03-27T04:15:04.093Z
+**Generated by Linkumori CLI** - 2026-03-29T03:27:54.666Z
