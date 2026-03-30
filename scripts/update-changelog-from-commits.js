@@ -27,7 +27,8 @@
  * 2025-08-21   Subham Mahesh   Second modification
  * 2025-09-05   Subham Mahesh   Third modification
  * 2026-03-14   Subham Mahesh   Fourth modification
- * 2026-03-22   Subham Mahesh    Fifth modification 
+ * 2026-03-22   Subham Mahesh   Fifth modification
+ * 2026-03-31   Subham Mahesh   Sixth modification
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
  *
@@ -63,32 +64,51 @@ import { execSync } from "node:child_process";
 import readline from "node:readline";
 
 // ============================================================
+// TAG PREFIX — all Linkumori git tags use this prefix
+// e.g.  linkumori-v1.0,  linkumori-v2.0,  linkumori-v4.0
+// ============================================================
+
+const TAG_PREFIX = "linkumori-v";
+
+// ============================================================
+// Data-file changelog entries
+// When these files change, a human-readable entry is always
+// generated regardless of the commit subject.
+// ============================================================
+
+const DATA_FILE_DESCRIPTIONS = {
+  "data/public_suffix_list.dat":          "Downloaded latest public suffix list from upstream",
+  "data/linkumori-clearurls-min.json":    "Generated rules JSON minified",
+  "data/downloaded-official-rules.json":  "Downloaded latest rules for ClearURLs",
+};
+
+// ============================================================
 // CLI argument parsing
 // ============================================================
 
 const args = process.argv.slice(2);
 
 const CLI = {
-  maxCommits: 0,       // 0 = auto (resolved later to total commit count)
-  dryRun: false,
-  help: false,
-  interactive: false,
-  verbose: false,
-  noColor: false,
-  changelogPath: null, // null = auto-discover
-  repoUrl: null,       // null = auto-detect from git remote
+  maxCommits:    0,     // 0 = auto (resolved later to total commit count)
+  dryRun:        false,
+  help:          false,
+  interactive:   false,
+  verbose:       false,
+  noColor:       false,
+  changelogPath: null,  // null = auto-discover
+  repoUrl:       null,  // null = auto-detect from git remote
 };
 
 for (let i = 0; i < args.length; i++) {
   const arg = args[i];
-  if (arg === "--help" || arg === "-h") { CLI.help = true; }
-  else if (arg === "--dry-run" || arg === "-d") { CLI.dryRun = true; }
+  if      (arg === "--help"        || arg === "-h") { CLI.help        = true; }
+  else if (arg === "--dry-run"     || arg === "-d") { CLI.dryRun      = true; }
   else if (arg === "--interactive" || arg === "-i") { CLI.interactive = true; }
-  else if (arg === "--verbose" || arg === "-v") { CLI.verbose = true; }
-  else if (arg === "--no-color") { CLI.noColor = true; }
-  else if (arg === "--changelog" || arg === "-c") { CLI.changelogPath = args[++i] || null; }
-  else if (arg === "--repo-url" || arg === "-r") { CLI.repoUrl = args[++i] || null; }
-  else if (/^\d+$/.test(arg)) { CLI.maxCommits = Number.parseInt(arg, 10); }
+  else if (arg === "--verbose"     || arg === "-v") { CLI.verbose     = true; }
+  else if (arg === "--no-color")                    { CLI.noColor     = true; }
+  else if (arg === "--changelog"   || arg === "-c") { CLI.changelogPath = args[++i] || null; }
+  else if (arg === "--repo-url"    || arg === "-r") { CLI.repoUrl       = args[++i] || null; }
+  else if (/^\d+$/.test(arg))                       { CLI.maxCommits    = Number.parseInt(arg, 10); }
 }
 
 // ============================================================
@@ -96,7 +116,7 @@ for (let i = 0; i < args.length; i++) {
 // ============================================================
 
 const C = CLI.noColor
-  ? { reset: "", bold: "", dim: "", red: "", green: "", yellow: "", blue: "", cyan: "", magenta: "" }
+  ? { reset:"", bold:"", dim:"", red:"", green:"", yellow:"", blue:"", cyan:"", magenta:"" }
   : {
       reset:   "\x1b[0m",
       bold:    "\x1b[1m",
@@ -109,11 +129,11 @@ const C = CLI.noColor
       magenta: "\x1b[35m",
     };
 
-function log(msg)         { process.stdout.write(msg + "\n"); }
-function info(msg)        { log(`${C.cyan}ℹ${C.reset}  ${msg}`); }
-function success(msg)     { log(`${C.green}✔${C.reset}  ${msg}`); }
-function warn(msg)        { log(`${C.yellow}⚠${C.reset}  ${msg}`); }
-function verbose(msg)     { if (CLI.verbose) log(`${C.dim}  ${msg}${C.reset}`); }
+function log(msg)     { process.stdout.write(msg + "\n"); }
+function info(msg)    { log(`${C.cyan}ℹ${C.reset}  ${msg}`); }
+function success(msg) { log(`${C.green}✔${C.reset}  ${msg}`); }
+function warn(msg)    { log(`${C.yellow}⚠${C.reset}  ${msg}`); }
+function verbose(msg) { if (CLI.verbose) log(`${C.dim}  ${msg}${C.reset}`); }
 
 // ============================================================
 // Help text
@@ -137,13 +157,32 @@ ${C.bold}OPTIONS${C.reset}
                           e.g. https://github.com/owner/repo
 
   [maxCommits]            Positional integer — how many recent commits to scan
-                          (default: 80)
+                          (default: full history)
+
+${C.bold}TAG FORMAT${C.reset}
+  All Linkumori release tags must use the prefix: ${C.cyan}${TAG_PREFIX}${C.reset}
+    e.g.  linkumori-v1.0   linkumori-v2.0   linkumori-v4.0
+  Compare URLs are automatically built using this prefix:
+    https://github.com/…/compare/linkumori-v3.0...linkumori-v4.0
+
+${C.bold}DATA FILE AUTO-DETECTION${C.reset}
+  When any of these files change, a human-readable entry is always
+  added to the changelog regardless of the commit subject:
+    • data/public_suffix_list.dat       → "Updated public suffix list"
+    • data/linkumori-clearurls-min.json → "Updated URL cleaning rules"
+    • data/downloaded-official-rules.json → "Updated official URL cleaning rules"
 
 ${C.bold}CONVENTIONAL COMMITS SUPPORT${C.reset}
   The tool fully parses the Conventional Commits spec:
     feat:, fix:, docs:, style:, refactor:, perf:, test:, build:, ci:, chore:, revert:
   Breaking changes (feat!, fix!, or "BREAKING CHANGE:" footer) are highlighted
   under a dedicated "Breaking Changes" section.
+
+${C.bold}NOISE FILTERING${C.reset}
+  The following commits are always excluded from user-facing entries:
+    • github-actions[bot], dependabot, renovate (CI bots)
+    • chore: update changelog / chore: update commit history
+    • release X.Y / version bump commits (used as boundaries only)
 
 ${C.bold}CONFIG FILE${C.reset}
   Create a ${C.cyan}.changelogrc.json${C.reset} in your project root to set defaults:
@@ -154,7 +193,7 @@ ${C.bold}CONFIG FILE${C.reset}
     }
 
 ${C.bold}EXAMPLES${C.reset}
-  node linkumori-cli-tool.js                  # fully automatic best run (zero config)
+  node linkumori-cli-tool.js                  # fully automatic (zero config)
   node linkumori-cli-tool.js --dry-run        # preview only, nothing written
   node linkumori-cli-tool.js 120              # override scan depth to 120 commits
   node linkumori-cli-tool.js -i               # interactive menu
@@ -166,11 +205,32 @@ ${C.bold}AUTO-INTELLIGENCE (zero-config defaults)${C.reset}
                   created automatically with a proper header if none exists
   • Scan depth  — set to total commit count so no commit is ever missed
   • Dedup       — short + full hashes both tracked; re-runs never duplicate entries
-  • Release IDs — detected via git tags AND commit messages (chore(release):, bump, etc.)
-  • Noise       — release/version-bump commits excluded from entry lists
+  • Release IDs — detected via ${C.cyan}${TAG_PREFIX}X.Y${C.reset} git tags AND commit messages
+  • Noise       — bot commits and release/version-bump commits excluded
   • Ordering    — release sections sorted by semver, newest first
 `);
   process.exit(0);
+}
+
+// ============================================================
+// Tag helpers
+// ============================================================
+
+/**
+ * Convert a version string like "v4.0" to its full git tag "linkumori-v4.0".
+ */
+function tagFromVersion(version) {
+  // "v4.0" → strip any leading "v", prepend TAG_PREFIX
+  return TAG_PREFIX + version.replace(/^v/i, "");
+}
+
+/**
+ * Convert a git tag like "linkumori-v4.0" to the changelog version "v4.0".
+ */
+function versionFromTag(tag) {
+  // Strip TAG_PREFIX, ensure single "v" prefix
+  const bare = tag.replace(new RegExp(`^${TAG_PREFIX}`), "").replace(/^v/i, "");
+  return `v${bare}`;
 }
 
 // ============================================================
@@ -229,11 +289,7 @@ function findExistingChangelog() {
 /** Bootstrap a brand-new CHANGELOG.md with a proper Keep a Changelog header. */
 function bootstrapChangelog(filePath) {
   const projectName = autoDetectProjectName();
-  const today = new Date().toISOString().slice(0, 10);
-  const repoLine = CLI.repoUrl
-    ? `\nProject: ${CLI.repoUrl}\n`
-    : "";
-
+  const repoLine = CLI.repoUrl ? `\nProject: ${CLI.repoUrl}\n` : "";
   const content = [
     `# Changelog`,
     ``,
@@ -249,7 +305,6 @@ function bootstrapChangelog(filePath) {
     `- No unreleased commit entries.`,
     ``,
   ].join("\n");
-
   fs.writeFileSync(filePath, content);
   info(`Created ${filePath} with Keep a Changelog header`);
 }
@@ -265,9 +320,8 @@ function autoDetectProjectName() {
 
 /** Return the total number of commits in the repo (used to set scan depth). */
 function getTotalCommitCount() {
-  try {
-    return Number.parseInt(run("git rev-list --count HEAD"), 10) || 500;
-  } catch { return 500; }
+  try { return Number.parseInt(run("git rev-list --count HEAD"), 10) || 500; }
+  catch { return 500; }
 }
 
 /**
@@ -280,9 +334,9 @@ function loadConfig() {
   if (fs.existsSync(rcPath)) {
     try {
       const rc = JSON.parse(fs.readFileSync(rcPath, "utf8"));
-      if (rc.maxCommits && CLI.maxCommits === 0) CLI.maxCommits = rc.maxCommits;
-      if (rc.repoUrl    && !CLI.repoUrl)         CLI.repoUrl   = rc.repoUrl;
-      if (rc.changelogPath && !CLI.changelogPath) CLI.changelogPath = rc.changelogPath;
+      if (rc.maxCommits    && CLI.maxCommits === 0)  CLI.maxCommits    = rc.maxCommits;
+      if (rc.repoUrl       && !CLI.repoUrl)           CLI.repoUrl       = rc.repoUrl;
+      if (rc.changelogPath && !CLI.changelogPath)     CLI.changelogPath = rc.changelogPath;
       verbose(`Loaded config from ${rcPath}`);
     } catch { warn(`Failed to parse .changelogrc.json — using auto-defaults.`); }
   }
@@ -353,23 +407,49 @@ function isGitRepo() {
  */
 function shortHash(h) { return (h || "").trim().toLowerCase().slice(0, 7); }
 
+// ============================================================
+// Bot / noise detection
+// ============================================================
+
 /**
- * Return true if this commit is a release/version-bump commit that should
- * be excluded from the human-readable entry list (but still used as a
- * boundary marker).
+ * Return true if the author email belongs to an automated CI bot.
+ * These commits are always excluded from user-facing changelog entries.
+ */
+function isBotAuthor(author) {
+  return /\[bot\]|github-actions|dependabot|renovate|semantic-release/i.test(author || "");
+}
+
+/**
+ * Return true if this commit is release/version-bump noise that should be
+ * excluded from human-readable entries (still used as a boundary marker).
+ *
+ * NOTE: Data-file changes inside a noise commit are still surfaced via
+ * getDataFileEntries() — see buildGroups().
  */
 function isReleaseNoise(commit) {
-  // 1. Bare "push" commits
+  // 1. CI bot authors (github-actions[bot], dependabot, etc.)
+  if (isBotAuthor(commit.author)) return true;
+
+  // 2. Bare "push" commits
   if (/^push$/i.test(commit.subject)) return true;
 
-  // 2. Conventional commits where type=chore and scope=release (e.g. "chore(release): 2.0.0")
+  // 3. chore(release): … conventional form
   if (commit.type === "chore" && commit.scope === "release") return true;
 
-  // 3. Subject-level patterns: "release X.Y", "version bump", "bump to X.Y", etc.
-  if (/^(release|version bump|bump version|bump to|prepare release|cut release)\b/i.test(commit.subject)) return true;
+  // 4. Subject-level release/bump patterns
+  if (/^(release|version bump|bump version|bump to|prepare release|cut release)\b/i
+      .test(commit.subject)) return true;
 
-  // 4. Conventional chore: release/bump/version prefix  e.g. "chore: bump version to 2.0"
-  if (/^chore(\([^)]*\))?!?\s*:\s*(release|bump|version)\b/i.test(commit.subject)) return true;
+  // 5. chore: bump/version/release prefix
+  if (/^chore(\([^)]*\))?!?\s*:\s*(release|bump|version)\b/i
+      .test(commit.subject)) return true;
+
+  // 6. Automated changelog / commit-history updates
+  if (/^chore\s*(\([^)]*\))?\s*:\s*update (changelog|commit history)/i
+      .test(commit.subject)) return true;
+
+  // 7. "updated changelog.md" / "update changelog"
+  if (/^updated?\s+changelog/i.test(commit.subject)) return true;
 
   return false;
 }
@@ -377,29 +457,34 @@ function isReleaseNoise(commit) {
 /**
  * Compare two semver strings (with or without leading "v").
  * Returns negative if a < b, positive if a > b, 0 if equal.
+ * Newest version sorts first (descending).
  */
 function compareSemver(a, b) {
-  const parse = (v) => (v || "0").replace(/^v/i, "").split(".").map((n) => Number.parseInt(n, 10) || 0);
+  const parse = (v) =>
+    (v || "0").replace(/^v/i, "").split(".").map((n) => Number.parseInt(n, 10) || 0);
   const [aMaj, aMin, aPat = 0] = parse(a);
   const [bMaj, bMin, bPat = 0] = parse(b);
-  return (bMaj - aMaj) || (bMin - aMin) || (bPat - aPat); // newest first
+  return (bMaj - aMaj) || (bMin - aMin) || (bPat - aPat);
 }
 
+// ============================================================
+// Commit parsing — format includes %ae (author email) for bot detection
+// ============================================================
+
 /**
- * Parse a raw commit line (hash\x1fsubject\x1fbody\x1fdate\x1frefs)
- * into a rich commit object.
+ * Parse a raw commit record (fields separated by \x1f, records by \x1e).
+ * Fields: hash · authorEmail · subject · body · date · refs
  */
 function parseCommitLine(line) {
-  const [hash, subject, body, date, refs] = line.split("\x1f");
+  const [hash, author, subject, body, date, refs] = line.split("\x1f");
   if (!hash || !subject) return null;
 
-  const parsed = parseConventionalCommit(subject.trim());
-  const issues  = extractIssueRefs(subject + "\n" + (body || ""));
-  const breaking = detectBreakingChange(subject.trim(), body || "");
-  const isMerge  = /^Merge (pull request|branch|remote|tag)/i.test(subject.trim());
-  const isRevert = parsed.type === "revert" || /^Revert "/i.test(subject.trim());
+  const parsed    = parseConventionalCommit(subject.trim());
+  const issues    = extractIssueRefs(subject + "\n" + (body || ""));
+  const breaking  = detectBreakingChange(subject.trim(), body || "");
+  const isMerge   = /^Merge (pull request|branch|remote|tag)/i.test(subject.trim());
+  const isRevert  = parsed.type === "revert" || /^Revert "/i.test(subject.trim());
 
-  // Extract reverted commit hash if available
   let revertedHash = null;
   if (isRevert && body) {
     const m = body.match(/This reverts commit ([0-9a-f]{7,40})/i);
@@ -407,11 +492,12 @@ function parseCommitLine(line) {
   }
 
   return {
-    hash:        hash.trim(),
-    subject:     subject.trim(),
-    body:        (body || "").trim(),
-    date:        (date || "").trim(),
-    refs:        refs ? refs.trim() : "",
+    hash:    hash.trim(),
+    author:  (author || "").trim(),   // author email — used for bot detection
+    subject: subject.trim(),
+    body:    (body || "").trim(),
+    date:    (date || "").trim(),
+    refs:    refs ? refs.trim() : "",
     ...parsed,
     issues,
     breaking,
@@ -427,20 +513,18 @@ function parseCommitLine(line) {
  * Plus breaking-change indicator with ! (e.g. feat!: ..., feat(scope)!: ...)
  */
 function parseConventionalCommit(subject) {
-  // Pattern: type(scope)!: description  OR  type!: description  OR  type: description
   const ccRe = /^([a-z]+)(\([^)]*\))?(!)?\s*:\s*(.+)$/i;
   const m = subject.match(ccRe);
   if (m) {
     return {
       type:         m[1].toLowerCase(),
-      scope:        m[2] ? m[2].slice(1, -1) : null,  // strip parens
+      scope:        m[2] ? m[2].slice(1, -1) : null,
       breakingMark: !!m[3],
       description:  m[4].trim(),
       conventional: true,
     };
   }
-
-  // Fallback: keyword-based inference (backwards compat with old commit style)
+  // Fallback: keyword-based inference
   return {
     type:         inferTypeFromKeyword(subject),
     scope:        null,
@@ -456,38 +540,37 @@ function parseConventionalCommit(subject) {
  */
 function inferTypeFromKeyword(subject) {
   const s = subject.toLowerCase();
-  // More comprehensive than the original
-  if (/^(feat|feature|add|introduce|implement|new)\b/.test(s)) return "feat";
-  if (/^(fix|bug|hotfix|patch|resolve|correct|repair)\b/.test(s)) return "fix";
-  if (/^(remove|delete|drop|deprecate)\b/.test(s)) return "remove";
-  if (/^(docs?|document|readme|comment|jsdoc)\b/.test(s)) return "docs";
+  if (/^(feat|feature|add|introduce|implement|new)\b/.test(s))              return "feat";
+  if (/^(fix|bug|hotfix|patch|resolve|correct|repair)\b/.test(s))           return "fix";
+  if (/^(remove|delete|drop|deprecate)\b/.test(s))                          return "remove";
+  if (/^(docs?|document|readme|comment|jsdoc)\b/.test(s))                   return "docs";
   if (/^(refactor|rework|reorganize|restructure|cleanup|clean up)\b/.test(s)) return "refactor";
-  if (/^(perf|performance|optim|speed|faster)\b/.test(s)) return "perf";
-  if (/^(test|spec|coverage)\b/.test(s)) return "test";
-  if (/^(build|bundle|webpack|rollup|compile)\b/.test(s)) return "build";
-  if (/^(ci|pipeline|workflow|action|github action)\b/.test(s)) return "ci";
-  if (/^(style|format|lint|prettier|eslint)\b/.test(s)) return "style";
-  if (/^(revert)\b/.test(s)) return "revert";
-  if (/^(release|version|bump|tag)\b/.test(s)) return "release";
+  if (/^(perf|performance|optim|speed|faster)\b/.test(s))                   return "perf";
+  if (/^(test|spec|coverage)\b/.test(s))                                    return "test";
+  if (/^(build|bundle|webpack|rollup|compile)\b/.test(s))                   return "build";
+  if (/^(ci|pipeline|workflow|action|github action)\b/.test(s))             return "ci";
+  if (/^(style|format|lint|prettier|eslint)\b/.test(s))                     return "style";
+  if (/^(revert)\b/.test(s))                                                return "revert";
+  if (/^(release|version|bump|tag)\b/.test(s))                              return "release";
   return "chore";
 }
 
-/** Detect breaking change from subject bang-notation or body BREAKING CHANGE footer */
+/** Detect breaking change from subject bang-notation or body BREAKING CHANGE footer. */
 function detectBreakingChange(subject, body) {
   if (/^[a-z]+(\([^)]*\))?!\s*:/i.test(subject)) return true;
-  if (/^BREAKING[- ]CHANGE\s*:/m.test(body)) return true;
+  if (/^BREAKING[- ]CHANGE\s*:/m.test(body))      return true;
   return false;
 }
 
-/** Extract GitHub issue/PR references like #123 or GH-123 */
+/** Extract GitHub issue/PR references like #123 or GH-123. */
 function extractIssueRefs(text) {
   const refs = new Set();
-  for (const m of text.matchAll(/#(\d+)/g)) refs.add(m[1]);
+  for (const m of text.matchAll(/#(\d+)/g))    refs.add(m[1]);
   for (const m of text.matchAll(/GH-(\d+)/gi)) refs.add(m[1]);
   return [...refs];
 }
 
-/** Map a commit type to a CHANGELOG category heading */
+/** Map a commit type to a CHANGELOG category heading. */
 function typeToCategory(type, breaking) {
   if (breaking) return "Breaking Changes";
   switch (type) {
@@ -513,12 +596,12 @@ const CATEGORY_ORDER = [
 ];
 
 // ============================================================
-// Commit fetching
+// Commit fetching — format: hash · authorEmail · subject · body · date · refs
 // ============================================================
 
 function getRecentCommits(limit) {
-  // %h=short hash, %s=subject, %b=body, %ad=author date, %D=ref names
-  const fmt = "%h%x1f%s%x1f%b%x1f%ad%x1f%D%x1e";
+  // %h=short hash, %ae=author email, %s=subject, %b=body, %ad=author date, %D=ref names
+  const fmt = "%h%x1f%ae%x1f%s%x1f%b%x1f%ad%x1f%D%x1e";
   const output = run(
     `git log -n ${limit} --date=short --pretty=format:${JSON.stringify(fmt)}`
   );
@@ -530,7 +613,7 @@ function getRecentCommits(limit) {
 }
 
 function getCommitRange(fromExclusiveHash, toInclusiveHash) {
-  const fmt = "%h%x1f%s%x1f%b%x1f%ad%x1f%D%x1e";
+  const fmt = "%h%x1f%ae%x1f%s%x1f%b%x1f%ad%x1f%D%x1e";
   const range = fromExclusiveHash
     ? `${fromExclusiveHash}..${toInclusiveHash}`
     : toInclusiveHash;
@@ -544,35 +627,70 @@ function getCommitRange(fromExclusiveHash, toInclusiveHash) {
     .filter(Boolean);
 }
 
+// ============================================================
+// Changed-files lookup (cached — avoids redundant git show calls)
+// ============================================================
+
+const _changedFilesCache = new Map();
+
 function getChangedFilesForCommit(hash) {
-  const output = run(`git show --name-only --pretty=format: ${hash}`);
-  return output
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const key = shortHash(hash);
+  if (_changedFilesCache.has(key)) return _changedFilesCache.get(key);
+  try {
+    const output = run(`git show --name-only --pretty=format: ${hash}`);
+    const files = output.split("\n").map((l) => l.trim()).filter(Boolean);
+    _changedFilesCache.set(key, files);
+    return files;
+  } catch {
+    _changedFilesCache.set(key, []);
+    return [];
+  }
+}
+
+/**
+ * Return formatted changelog entries for any tracked data files that were
+ * modified in this commit. Called for EVERY commit (including noise commits)
+ * so that data-file updates are never silently dropped.
+ */
+function getDataFileEntries(commit) {
+  const files = getChangedFilesForCommit(commit.hash);
+  const entries = [];
+  for (const [file, desc] of Object.entries(DATA_FILE_DESCRIPTIONS)) {
+    if (files.includes(file)) {
+      const hashPart = CLI.repoUrl
+        ? `hash: [\`${commit.hash}\`](${CLI.repoUrl}/commit/${commit.hash})`
+        : `hash: \`${commit.hash}\``;
+      entries.push(`- ${desc} (\`${commit.date}\`, ${hashPart})`);
+      verbose(`Data-file entry: "${desc}" from commit ${commit.hash}`);
+    }
+  }
+  return entries;
 }
 
 // ============================================================
-// Git tag & release detection
+// Git tag & release detection — all tags use TAG_PREFIX
 // ============================================================
 
 /**
- * Return all version tags as {tag, hash, date, version} sorted newest first.
- * Supports vX.Y, vX.Y.Z, X.Y, X.Y.Z.
+ * Return all Linkumori version tags as {tag, hash, date, version} sorted newest first.
+ * Only tags matching TAG_PREFIX (linkumori-v) are considered.
  */
 function getVersionTags() {
   try {
-    const raw = run("git tag --list --sort=-version:refname");
+    // List only tags with our prefix, sorted newest-semver first
+    const raw = run(`git tag -l "${TAG_PREFIX}*" --sort=-version:refname`);
     const tags = raw.split("\n").filter(Boolean);
     const result = [];
     for (const tag of tags) {
-      if (!/^v?\d+\.\d+/.test(tag)) continue;
+      // Validate: must be linkumori-vX.Y[.Z]
+      if (!new RegExp(`^${TAG_PREFIX}\\d+\\.\\d+`).test(tag)) continue;
       try {
         const hash = run(`git rev-list -n 1 ${tag}`).slice(0, 7);
         const date = run(`git log -1 --format=%ad --date=short ${tag}`);
-        const version = tag.startsWith("v") ? tag : `v${tag}`;
+        const version = versionFromTag(tag);  // e.g. "v4.0"
         result.push({ tag, hash, date, version });
-      } catch { /* skip bad tags */ }
+        verbose(`Tag: ${tag} → version ${version} @ ${hash}`);
+      } catch { /* skip unresolvable tags */ }
     }
     return result;
   } catch {
@@ -581,15 +699,14 @@ function getVersionTags() {
 }
 
 /**
- * Extract a semver string from a commit subject that indicates a release.
- * Handles: "release 1.2", "chore(release): 1.2.3", "bump to v2.0", etc.
+ * Extract a semver string (as "vX.Y[.Z]") from a commit subject that indicates
+ * a release. Handles: "release 1.2", "chore(release): 1.2.3", "bump to v2.0", etc.
  */
 function extractVersionFromSubject(subject) {
-  // Conventional: chore(release): 1.2.3  or  chore: bump to 1.2.3
   const patterns = [
-    /(?:release|bump(?:\s+(?:to|version)?)?|version(?:\s+to)?)\s+v?(\d+\.\d+(?:\.\d+)?)/i,
-    /^chore(?:\([^)]*\))?!?\s*:\s*(?:release|bump|version[^:]*)\s+v?(\d+\.\d+(?:\.\d+)?)/i,
-    /v?(\d+\.\d+\.\d+)/,  // bare version in subject as last resort
+    /(?:release|bump(?:\s+(?:to|version)?)?|version(?:\s+to)?)\s+(?:linkumori-)?v?(\d+\.\d+(?:\.\d+)?)/i,
+    /^chore(?:\([^)]*\))?!?\s*:\s*(?:release|bump|version[^:]*)\s+(?:linkumori-)?v?(\d+\.\d+(?:\.\d+)?)/i,
+    /(?:linkumori-)?v(\d+\.\d+\.\d+)/,  // bare full version as last resort
   ];
   for (const re of patterns) {
     const m = subject.match(re);
@@ -624,7 +741,7 @@ function detectReleaseCommits(allCommits) {
       continue;
     }
 
-    // Subject-based detection (multiple patterns)
+    // Subject-based detection (fallback for untagged repos)
     const version = extractVersionFromSubject(commit.subject);
     if (version && !seen.has(version.toLowerCase())) {
       releases.push({ ...commit, version, source: "commit" });
@@ -632,7 +749,7 @@ function detectReleaseCommits(allCommits) {
     }
   }
 
-  // Sort newest-first by semver so section insertion is always correct
+  // Sort newest-first by semver
   releases.sort((a, b) => compareSemver(a.version, b.version));
   return releases;
 }
@@ -649,23 +766,31 @@ function readChangelog() {
 }
 
 /**
- * Collect every hash already recorded in the changelog.
- * Stores both the raw form AND the 7-char short form so we match
- * regardless of which length was written.
+ * Collect every hash already recorded in the changelog (both 7-char and full).
+ * Prevents duplicates on re-runs.
  */
 function collectLoggedHashes(changelog) {
   const hashes = new Set();
   for (const m of changelog.matchAll(/hash:\s*\[?`?([0-9a-f]{7,40})`?\]?/gi)) {
     const h = m[1].toLowerCase();
     hashes.add(h);
-    hashes.add(h.slice(0, 7)); // also store 7-char prefix
+    hashes.add(h.slice(0, 7));
   }
   return hashes;
 }
 
+/**
+ * Return the set of version strings already present in the changelog.
+ * Matches both Linkumori-style (v4.0) and legacy (1.27.3) headings.
+ */
 function getExistingVersionSet(changelog) {
   const versions = new Set();
-  for (const m of changelog.matchAll(/^## \[(v[0-9]+\.[0-9]+(?:\.[0-9]+){0,2})\]/gm)) {
+  // Linkumori versions: [v4.0], [v3.0], [v1.0], …
+  for (const m of changelog.matchAll(/^## \[(v[\d.]+)\]/gm)) {
+    versions.add(m[1].toLowerCase());
+  }
+  // Legacy ClearURLs versions: [1.27.3], [1.26.0], …
+  for (const m of changelog.matchAll(/^## \[(\d[\d.]+)\]/gm)) {
     versions.add(m[1].toLowerCase());
   }
   return versions;
@@ -677,21 +802,15 @@ function getExistingVersionSet(changelog) {
 
 /**
  * Rewrite a raw commit description into polished, professional prose.
- * No external API — pure deterministic string transforms:
- *   1. Capitalize first letter
- *   2. Expand common technical abbreviations
- *   3. Apply type-aware verb substitutions (feat → Introduce, fix → Resolve, …)
- *   4. General verb normalization
- *   5. Strip trailing period (changelog style convention)
  */
 function humanizeDescription(desc, type) {
   if (!desc) return desc;
   let s = desc.trim();
 
-  // ── 1. Capitalize first letter ────────────────────────────
+  // 1. Capitalize first letter
   s = s.charAt(0).toUpperCase() + s.slice(1);
 
-  // ── 2. Expand common technical abbreviations ──────────────
+  // 2. Expand common technical abbreviations
   const ABBREVS = {
     cfg:    "configuration",
     config: "configuration",
@@ -731,46 +850,45 @@ function humanizeDescription(desc, type) {
   };
   for (const [abbr, full] of Object.entries(ABBREVS)) {
     s = s.replace(new RegExp(`\\b${abbr}\\b`, "gi"), (match) => {
-      // Preserve initial capital if the matched word was capitalised
       const isCapital = match[0] === match[0].toUpperCase() && match[0] !== match[0].toLowerCase();
       return isCapital ? full.charAt(0).toUpperCase() + full.slice(1) : full;
     });
   }
 
-  // ── 3. Type-aware leading verb substitutions ──────────────
+  // 3. Type-aware leading verb substitutions
   const TYPE_VERBS = {
-    feat:     [[/^Add\b/i,          "Introduce"],
-               [/^Implement\b/i,    "Implement"],
-               [/^Create\b/i,       "Create"],
-               [/^New\b/i,          "Introduce new"],
-               [/^Support\b/i,      "Add support for"]],
-    fix:      [[/^Fix\b/i,          "Resolve"],
-               [/^Bug\b/i,          "Fix bug in"],
-               [/^Hotfix\b/i,       "Apply hotfix for"],
-               [/^Patch\b/i,        "Patch"],
-               [/^Correct\b/i,      "Correct"],
-               [/^Broken\b/i,       "Repair broken"]],
-    refactor: [[/^Refactor\b/i,     "Restructure"],
-               [/^Cleanup\b/i,      "Clean up"],
-               [/^Clean up\b/i,     "Clean up"],
-               [/^Reorganize\b/i,   "Reorganize"],
-               [/^Rework\b/i,       "Overhaul"]],
-    perf:     [[/^Optim/i,          "Optimize"],
-               [/^Speed/i,          "Speed up"],
-               [/^Improve perf/i,   "Improve performance of"]],
-    docs:     [[/^Add docs\b/i,     "Document"],
-               [/^Update docs\b/i,  "Refresh documentation for"],
-               [/^Document\b/i,     "Document"]],
-    chore:    [[/^Update\b/i,       "Update"],
-               [/^Bump\b/i,         "Bump"],
-               [/^Upgrade\b/i,      "Upgrade"]],
+    feat:     [[/^Add\b/i,        "Introduce"],
+               [/^Implement\b/i,  "Implement"],
+               [/^Create\b/i,     "Create"],
+               [/^New\b/i,        "Introduce new"],
+               [/^Support\b/i,    "Add support for"]],
+    fix:      [[/^Fix\b/i,        "Resolve"],
+               [/^Bug\b/i,        "Fix bug in"],
+               [/^Hotfix\b/i,     "Apply hotfix for"],
+               [/^Patch\b/i,      "Patch"],
+               [/^Correct\b/i,    "Correct"],
+               [/^Broken\b/i,     "Repair broken"]],
+    refactor: [[/^Refactor\b/i,   "Restructure"],
+               [/^Cleanup\b/i,    "Clean up"],
+               [/^Clean up\b/i,   "Clean up"],
+               [/^Reorganize\b/i, "Reorganize"],
+               [/^Rework\b/i,     "Overhaul"]],
+    perf:     [[/^Optim/i,        "Optimize"],
+               [/^Speed/i,        "Speed up"],
+               [/^Improve perf/i, "Improve performance of"]],
+    docs:     [[/^Add docs\b/i,   "Document"],
+               [/^Update docs\b/i,"Refresh documentation for"],
+               [/^Document\b/i,   "Document"]],
+    chore:    [[/^Update\b/i,     "Update"],
+               [/^Bump\b/i,       "Bump"],
+               [/^Upgrade\b/i,    "Upgrade"]],
   };
   const verbs = TYPE_VERBS[type] || [];
   for (const [pattern, replacement] of verbs) {
     if (pattern.test(s)) { s = s.replace(pattern, replacement); break; }
   }
 
-  // ── 4. General verb normalisation (applied after type verbs) ─
+  // 4. General verb normalisation
   s = s
     .replace(/^Fixed\b/,    "Resolve")
     .replace(/^Added\b/,    "Add")
@@ -781,7 +899,7 @@ function humanizeDescription(desc, type) {
     .replace(/^Rewrote\b/,  "Rewrite")
     .replace(/^Rewrites\b/, "Rewrite");
 
-  // ── 5. Strip trailing period ──────────────────────────────
+  // 5. Strip trailing period
   s = s.replace(/\.$/, "");
 
   return s;
@@ -814,12 +932,9 @@ function formatEntry(commit) {
   }
 
   // Commit link
-  let hashPart;
-  if (CLI.repoUrl) {
-    hashPart = `hash: [\`${commit.hash}\`](${CLI.repoUrl}/commit/${commit.hash})`;
-  } else {
-    hashPart = `hash: \`${commit.hash}\``;
-  }
+  const hashPart = CLI.repoUrl
+    ? `hash: [\`${commit.hash}\`](${CLI.repoUrl}/commit/${commit.hash})`
+    : `hash: \`${commit.hash}\``;
 
   return `- ${scopePart}${desc} (\`${commit.date}\`, ${hashPart})${issuePart}`;
 }
@@ -828,25 +943,50 @@ function formatEntry(commit) {
 // Section builders
 // ============================================================
 
+/**
+ * Group commits into CHANGELOG categories.
+ *
+ * Key behaviour:
+ *  - Merge commits and release/noise commits are excluded from normal entries.
+ *  - However, every commit (including noise) is checked for data-file changes;
+ *    if it touches a tracked data file a specific entry is injected under "Changed".
+ *    This ensures public_suffix_list.dat and linkumori-clearurls-min.json updates
+ *    are never silently dropped even when they arrive inside a release commit.
+ */
 function buildGroups(commits) {
   /** @type {Record<string, string[]>} */
   const groups = {};
   for (const cat of CATEGORY_ORDER) groups[cat] = [];
 
+  // Track data-file hashes already added to avoid duplicates within a range
+  const addedDataHashes = new Set();
+
   for (const commit of commits) {
-    // Skip merge commits, release/version-bump noise
-    if (commit.isMerge) { verbose(`Skipping merge commit ${commit.hash}`); continue; }
-    if (isReleaseNoise(commit)) { verbose(`Skipping noise commit ${commit.hash}: ${commit.subject}`); continue; }
+    const noise = isReleaseNoise(commit);
 
-    const cat = typeToCategory(commit.type, commit.breaking || commit.breakingMark);
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push(formatEntry(commit));
+    if (commit.isMerge) {
+      verbose(`Skipping merge commit ${commit.hash}`);
+    } else if (!noise) {
+      // Regular user-authored commit
+      const cat = typeToCategory(commit.type, commit.breaking || commit.breakingMark);
+      groups[cat].push(formatEntry(commit));
+    } else {
+      verbose(`Noise commit ${commit.hash}: ${commit.subject}`);
+    }
+
+    // Always check data files — even for noise/release/bot commits
+    const key = shortHash(commit.hash);
+    if (!addedDataHashes.has(key)) {
+      const dataEntries = getDataFileEntries(commit);
+      if (dataEntries.length > 0) {
+        groups["Changed"].push(...dataEntries);
+        addedDataHashes.add(key);
+      }
+    }
   }
 
-  // Sort entries within each category alphabetically (by description)
-  for (const cat of Object.keys(groups)) {
-    groups[cat].sort();
-  }
+  // Sort entries within each category alphabetically
+  for (const cat of Object.keys(groups)) groups[cat].sort();
 
   return groups;
 }
@@ -864,8 +1004,8 @@ function renderGroups(groups) {
 }
 
 function buildUnreleasedSection(commits) {
-  const groups = buildGroups(commits);
-  const lines  = ["## [Unreleased]"];
+  const groups   = buildGroups(commits);
+  const lines    = ["## [Unreleased]"];
   const rendered = renderGroups(groups);
 
   if (rendered.length === 0) {
@@ -879,25 +1019,33 @@ function buildUnreleasedSection(commits) {
   return lines.join("\n").trimEnd();
 }
 
+/**
+ * Build a versioned release section.
+ *
+ * Compare URL uses TAG_PREFIX so links look like:
+ *   https://github.com/…/compare/linkumori-v3.0...linkumori-v4.0
+ */
 function buildReleaseSection(releaseCommit, previousReleaseCommit) {
   const rangeCommits = getCommitRange(
     previousReleaseCommit?.hash || "",
     releaseCommit.hash
   );
 
-  const groups  = buildGroups(rangeCommits);
+  const groups   = buildGroups(rangeCommits);
   const rendered = renderGroups(groups);
 
-  // Compare link between tags
+  // Compare link between tags — always uses linkumori-v prefix
   let compareLink = "";
   if (CLI.repoUrl && previousReleaseCommit) {
-    compareLink = ` ([compare](${CLI.repoUrl}/compare/${previousReleaseCommit.version}...${releaseCommit.version}))`;
+    const fromTag = tagFromVersion(previousReleaseCommit.version); // e.g. "linkumori-v3.0"
+    const toTag   = tagFromVersion(releaseCommit.version);         // e.g. "linkumori-v4.0"
+    compareLink = ` ([compare](${CLI.repoUrl}/compare/${fromTag}...${toTag}))`;
   }
 
   const lines = [`## [${releaseCommit.version}] - ${releaseCommit.date}${compareLink}`];
 
   if (rendered.length === 0) {
-    // Fallback: list changed files
+    // Fallback: describe changed files when no structured entries were found
     const files = getChangedFilesForCommit(releaseCommit.hash);
     lines.push("### Changed");
     lines.push(`- Release ${releaseCommit.version} (hash: \`${releaseCommit.hash}\`).`);
@@ -920,9 +1068,9 @@ function buildReleaseSection(releaseCommit, previousReleaseCommit) {
 function replaceUnreleasedSection(changelog, unreleasedSection) {
   const start = changelog.indexOf("## [Unreleased]");
   if (start !== -1) {
-    const rest            = changelog.slice(start + "## [Unreleased]".length);
-    const nextVersionRel  = rest.search(/\n## \[(?!Unreleased\])/);
-    const end             = nextVersionRel === -1
+    const rest           = changelog.slice(start + "## [Unreleased]".length);
+    const nextVersionRel = rest.search(/\n## \[(?!Unreleased\])/);
+    const end = nextVersionRel === -1
       ? changelog.length
       : start + "## [Unreleased]".length + nextVersionRel + 1;
     const before = changelog.slice(0, start).trimEnd();
@@ -959,15 +1107,15 @@ function insertReleaseSections(changelog, releaseSections) {
 
 function generateCommitHistory() {
   info("Generating COMMIT_HISTORY.md …");
-  const fmt  = "%h%x1f%an%x1f%ad%x1f%s%x1f%b%x1e";
-  const raw  = run(`git log --date=short --pretty=format:${JSON.stringify(fmt)} --name-only`);
+  const fmt    = "%h%x1f%an%x1f%ad%x1f%s%x1f%b%x1e";
+  const raw    = run(`git log --date=short --pretty=format:${JSON.stringify(fmt)} --name-only`);
   const blocks = raw.split("\x1e").map((b) => b.trim()).filter(Boolean);
 
-  /** @type {Map<string, {author: string, date: string, hashes: string[]}[]>} */
+  /** @type {Map<string, {author: string, date: string, hash: string, subject: string}[]>} */
   const byFile = new Map();
 
   for (const block of blocks) {
-    const lines = block.split("\n");
+    const lines  = block.split("\n");
     const header = lines[0];
     const [hash, author, date, subject] = header.split("\x1f");
     if (!hash) continue;
@@ -1009,7 +1157,7 @@ function generateCommitHistory() {
 // ============================================================
 
 async function interactiveMenu() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const rl  = readline.createInterface({ input: process.stdin, output: process.stdout });
   const ask = (q) => new Promise((resolve) => rl.question(q, resolve));
 
   log(`\n${C.bold}linkumori-cli-tool — Interactive Mode${C.reset}\n`);
@@ -1023,12 +1171,14 @@ async function interactiveMenu() {
   rl.close();
 
   switch (choice) {
-    case "1": await runUpdate(false); break;
-    case "2": await runUpdate(true);  break;
+    case "1": await runUpdate(false);    break;
+    case "2": await runUpdate(true);     break;
     case "3": generateCommitHistory();   break;
     case "4": showRecentCommits();       break;
     case "5": log("Bye!"); process.exit(0); break;
-    default:  warn(`Unknown choice "${choice}", running default update.`); await runUpdate(false);
+    default:
+      warn(`Unknown choice "${choice}", running default update.`);
+      await runUpdate(false);
   }
 }
 
@@ -1036,10 +1186,11 @@ function showRecentCommits() {
   const commits = getRecentCommits(20);
   log(`\n${C.bold}Last ${commits.length} commits:${C.reset}\n`);
   for (const c of commits) {
-    const typeLabel = `${C.cyan}[${c.type}]${C.reset}`;
-    const scopeLabel = c.scope ? ` ${C.magenta}(${c.scope})${C.reset}` : "";
-    const breakLabel = c.breaking || c.breakingMark ? ` ${C.red}BREAKING${C.reset}` : "";
-    log(`  ${C.dim}${c.hash}${C.reset} ${typeLabel}${scopeLabel}${breakLabel} ${c.description || c.subject}`);
+    const typeLabel   = `${C.cyan}[${c.type}]${C.reset}`;
+    const scopeLabel  = c.scope ? ` ${C.magenta}(${c.scope})${C.reset}` : "";
+    const breakLabel  = c.breaking || c.breakingMark ? ` ${C.red}BREAKING${C.reset}` : "";
+    const botLabel    = isBotAuthor(c.author) ? ` ${C.dim}[bot]${C.reset}` : "";
+    log(`  ${C.dim}${c.hash}${C.reset} ${typeLabel}${scopeLabel}${breakLabel}${botLabel} ${c.description || c.subject}`);
   }
   log("");
 }
@@ -1070,7 +1221,9 @@ async function runUpdate(dryRun) {
 
   // Build each missing release section; find its predecessor by semver position
   const generatedReleaseSections = missingReleaseCommits.map((releaseCommit) => {
-    const idx = releaseCommits.findIndex((r) => shortHash(r.hash) === shortHash(releaseCommit.hash));
+    const idx = releaseCommits.findIndex(
+      (r) => shortHash(r.hash) === shortHash(releaseCommit.hash)
+    );
     const previousReleaseCommit = idx >= 0 ? releaseCommits[idx + 1] : null;
     return buildReleaseSection(releaseCommit, previousReleaseCommit);
   });
@@ -1078,9 +1231,7 @@ async function runUpdate(dryRun) {
   let changelog = insertReleaseSections(changelogOriginal, generatedReleaseSections);
 
   // ── Unreleased section ────────────────────────────────────────────────────
-  const loggedHashes = collectLoggedHashes(changelog);
-
-  // Commits AFTER the most recent release boundary (HEAD → latest release)
+  const loggedHashes    = collectLoggedHashes(changelog);
   const latestReleaseIdx = allCommits.findIndex((c) =>
     releaseCommits.some((r) => shortHash(r.hash) === shortHash(c.hash))
   );
@@ -1088,7 +1239,7 @@ async function runUpdate(dryRun) {
     ? allCommits
     : allCommits.slice(0, latestReleaseIdx);
 
-  // Exclude: already logged (by short OR full hash), and release-noise commits
+  // Exclude commits already logged (by short OR full hash)
   const unreleasedCommits = candidateCommits.filter((c) => {
     const sh = shortHash(c.hash);
     return !loggedHashes.has(sh) && !loggedHashes.has(c.hash.toLowerCase());
@@ -1099,6 +1250,7 @@ async function runUpdate(dryRun) {
 
   // ── Statistics ─────────────────────────────────────────────────────────────
   const breakingCount = unreleasedCommits.filter((c) => c.breaking || c.breakingMark).length;
+  const botCount      = allCommits.filter((c) => isBotAuthor(c.author)).length;
   const mergeCount    = allCommits.filter((c) => c.isMerge).length;
   const noiseCount    = allCommits.filter((c) => isReleaseNoise(c)).length;
 
@@ -1112,15 +1264,16 @@ async function runUpdate(dryRun) {
   }
 
   log("");
-  info(`Commits scanned:          ${allCommits.length}  (full history)`);
-  info(`Merge/noise commits skipped: ${mergeCount + noiseCount}`);
-  info(`Release sections added:   ${generatedReleaseSections.length}`);
-  info(`Unreleased commits added: ${unreleasedCommits.length}`);
+  info(`Commits scanned:             ${allCommits.length}  (full history)`);
+  info(`Bot commits filtered:        ${botCount}`);
+  info(`Merge/noise commits skipped: ${mergeCount + noiseCount - botCount}`);
+  info(`Release sections added:      ${generatedReleaseSections.length}`);
+  info(`Unreleased commits added:    ${unreleasedCommits.length}`);
   if (releaseCommits.length > 0) {
-    info(`Latest release:           ${releaseCommits[0].version} (${releaseCommits[0].date})`);
+    info(`Latest release:              ${releaseCommits[0].version} (${releaseCommits[0].date})`);
   }
   if (breakingCount > 0) {
-    log(`${C.red}${C.bold}⚠  Breaking changes:       ${breakingCount}${C.reset}`);
+    log(`${C.red}${C.bold}⚠  Breaking changes:         ${breakingCount}${C.reset}`);
   }
   if (dryRun) {
     log(`\n${C.yellow}Dry-run mode — ${CLI.changelogPath} was NOT modified.${C.reset}`);
