@@ -31,8 +31,8 @@ Place the following license files in this directory:
   - Or from: https://mozilla.org/MPL/2.0/
 
 - **ISC.txt** - ISC License
-  - Download from: https://raw.githubusercontent.com/spdx/license-list-data/main/text/ISC.txt
-  - Or from: https://opensource.org/licenses/ISC
+  - Download from: https://opensource.org/licenses/ISC
+  - Or from: https://choosealicense.com/licenses/isc/
 
 ## How to Use
 

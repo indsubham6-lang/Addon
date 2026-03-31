@@ -5,7 +5,7 @@
  * ClearURLs
  * ============================================================
  * Copyright (c) 2017–2020 Kevin Röbert
- * Modified by Subham Mahesh (c) 2025–2026 (modified parts only)
+ * Modified by Subham Mahesh (c) 2026 (modified parts only)
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,7 +31,7 @@
  * MODIFICATION HISTORY
  * ============================================================
  * 2026-02-13   Subham Mahesh   First modification
- *
+ * 2026-03-31   Subham Mahesh   updated license documentation generator code (secound modification)
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
  *
@@ -698,8 +698,8 @@ Place the following license files in this directory:
   - Or from: https://mozilla.org/MPL/2.0/
 
 - **ISC.txt** - ISC License
-  - Download from: https://raw.githubusercontent.com/spdx/license-list-data/main/text/ISC.txt
-  - Or from: https://opensource.org/licenses/ISC
+  - Download from: https://opensource.org/licenses/ISC
+  - Or from: https://choosealicense.com/licenses/isc/
 
 ## How to Use
 
