@@ -25,6 +25,7 @@
  * ============================================================
  * 2026-03-31  Subham Mahesh   First modification
  * 2026-03-31 Subham Mahes     Secound modificication
+  2026-03-31 Subham Mahes     Third modification 
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
  *
@@ -55,13 +56,16 @@
  */
 
 
+
 import { readFileSync, writeFileSync } from "fs";
 import { execSync } from "child_process";
-import { glob } from "glob";
 
 const version = JSON.parse(readFileSync("manifest.json", "utf8")).version;
 
-const artifacts = await glob("web-ext-artifacts/*.xpi");
+// Find .xpi artifact using Bun's built-in Glob
+const glob = new Bun.Glob("web-ext-artifacts/*.xpi");
+const artifacts = await Array.fromAsync(glob.scan("."));
+
 if (artifacts.length === 0) {
   console.error("ERROR: No .xpi artifact found in web-ext-artifacts/");
   process.exit(1);
