@@ -60,29 +60,19 @@ jobs:
           jq --arg ver "${{ steps.version.outputs.value }}" '.version = $ver' manifest.json > manifest.tmp.json
           mv manifest.tmp.json manifest.json
 
-      - name: Build and sign extension
-        env:
-          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
-          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
-          WEB_EXT_CHANNEL: ${{ secrets.WEB_EXT_CHANNEL }}
-        run: bun run linkumori-cli-tool.js build-and-sign
+      - name: Build extension
+        run: bun run linkumori-cli-tool.js build
 
       - name: Verify build artifacts
         run: |
           shopt -s nullglob
           artifacts=(web-ext-artifacts/*)
           if [ ${#artifacts[@]} -eq 0 ]; then
-            echo "ERROR: No artifacts found in web-ext-artifacts/ â€” build or sign step may have failed."
+            echo "ERROR: No artifacts found in web-ext-artifacts/ — build step may have failed."
             exit 1
           fi
           echo "Found ${#artifacts[@]} artifact(s):"
           printf '  %s\n' "${artifacts[@]}"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linkumori-${{ steps.version.outputs.value }}
-          path: web-ext-artifacts/
 
       - name: Commit version bump
         run: |
@@ -115,6 +105,19 @@ jobs:
           git add CHANGELOG.md
           git commit -m "chore: update changelog for v${{ steps.version.outputs.value }}"
           git push
+
+      - name: Sign and upload to AMO
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+          WEB_EXT_CHANNEL: ${{ secrets.WEB_EXT_CHANNEL }}
+        run: bun run scripts/amo-upload.js
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linkumori-${{ steps.version.outputs.value }}
+          path: web-ext-artifacts/
 
       - name: Create GitHub Release
         env:
