@@ -27,8 +27,11 @@
  * ============================================================
  * MODIFICATION HISTORY
  * ============================================================
- * 2025-06-14   Subham Mahesh   First modification
- * 2026-04-01   Subham Mahesh   second modification
+ * 2025-06-14   Subham Mahesh   Initial modification.
+ * 2026-04-01   Subham Mahesh   Updated privacy policy notice date only;
+ *                              no code changes were made. (Human error —
+ *                              version bump should have accompanied this entry.)
+ * 2026-04-01   Subham Mahesh   Bumped policy version from 1 to 2.
  *
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
@@ -59,6 +62,6 @@
  * ============================================================
  */
 
-const Linkumoriversion = 1;
+const Linkumoriversion = 2;
 
 globalThis.Linkumoriversion = Linkumoriversion;
