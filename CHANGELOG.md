@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v12.0] - 2026-04-01 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v11.0...linkumori-v12.0))
+### Added
+- Introduce legal page optional feature toggles and translations (`2026-04-01`, hash: [`c0e79a7`](https://github.com/Linkumori/Linkumori-Addon/commit/c0e79a7))
+
 ## [v11.0] - 2026-04-01 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v10.0...linkumori-v11.0))
 ### Changed
 - Correction of date in readme (`2026-03-31`, hash: [`e7cc17e`](https://github.com/Linkumori/Linkumori-Addon/commit/e7cc17e))
