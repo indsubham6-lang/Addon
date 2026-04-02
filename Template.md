@@ -151,6 +151,22 @@
 
 ---
 
+##### Arabic (`_locales/ar/messages.json`)
+
+**Based on:** ClearURLs English messages.json
+
+**Original English source:** https://github.com/ClearURLs/Addon/blob/master/_locales/en/messages.json
+
+| Role | Author |
+|------|--------|
+| **Original** | ClearURLs Team |
+| **Arabic Translation** | © 2026 Subham Mahesh |
+
+**License:** GNU Lesser General Public License (LGPL) v3.0 or later
+
+{{LICENSE:LGPL-3.0}}
+
+---
 ##### Traditional Chinese (`_locales/zh_TW/messages.json`)
 
 **Based on:** ClearURLs English messages.json
