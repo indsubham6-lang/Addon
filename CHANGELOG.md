@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v14.0] - 2026-04-02 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v13.0...linkumori-v14.0))
+### Added
+- Introduce arabic language (`2026-04-02`, hash: [`5d01e04`](https://github.com/Linkumori/Linkumori-Addon/commit/5d01e04))
+
+### Changed
+- Downloaded latest public suffix list from upstream (`2026-04-02`, hash: [`143419f`](https://github.com/Linkumori/Linkumori-Addon/commit/143419f))
+
 ## [v13.0] - 2026-04-02 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v12.0...linkumori-v13.0))
 ### Changed
 - Release v13.0 (hash: `c6a56e6`).
