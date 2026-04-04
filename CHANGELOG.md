@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v16.0] - 2026-04-04 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v15.0...linkumori-v16.0))
+### Added
+- **i18n**: Introduce  i18n files (`2026-04-04`, hash: [`8a1dadb`](https://github.com/Linkumori/Linkumori-Addon/commit/8a1dadb))
+- **i18n**: Introduce locale license notices for multiple languages (`2026-04-04`, hash: [`7683c5b`](https://github.com/Linkumori/Linkumori-Addon/commit/7683c5b))
+
+### Changed
+- Folder rename pt-PT to pt_PT (`2026-04-04`, hash: [`0f75deb`](https://github.com/Linkumori/Linkumori-Addon/commit/0f75deb))
+- Update template.md (`2026-04-04`, hash: [`ec37ba7`](https://github.com/Linkumori/Linkumori-Addon/commit/ec37ba7))
+
+### Removed
+- Remove extra directory (`2026-04-04`, hash: [`d105377`](https://github.com/Linkumori/Linkumori-Addon/commit/d105377))
+
 ## [v15.0] - 2026-04-02 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v14.0...linkumori-v15.0))
 ### Added
 - Introduce Hungarian language (`2026-04-02`, hash: [`35ad3fa`](https://github.com/Linkumori/Linkumori-Addon/commit/35ad3fa))
