@@ -32,7 +32,7 @@
  *                              no code changes were made. (Human error —
  *                              version bump should have accompanied this entry.)
  * 2026-04-01   Subham Mahesh   Bumped policy version from 1 to 2.
- *
+ * 2026-4-11  Subham Mahesh   Bumped policy version from 2 to 3.
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
  *
@@ -62,6 +62,6 @@
  * ============================================================
  */
 
-const Linkumoriversion = 2;
+const Linkumoriversion = 3;
 
 globalThis.Linkumoriversion = Linkumoriversion;

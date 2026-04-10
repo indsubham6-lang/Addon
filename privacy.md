@@ -1,6 +1,6 @@
 # Linkumori Privacy Policy
 
-**Last Updated:** April 1, 2026
+**Last Updated:** April 11, 2026
 
 Linkumori is a free, non-commercial, open-source tool.
 
@@ -81,7 +81,11 @@ If you are unsure whether your version is official, you can verify it against th
 
 ## Changes to the Extension
 
-We may add new features or remove existing features from time to time. Where relevant, such changes may be reflected in an updated privacy policy.
+We may add new features or remove existing features from time to time. When we make significant or material changes, these may be reflected in an updated Privacy Policy.
+
+For example, if we introduce additional functionality that continues to operate without collecting any personal or non-personal data, we may not be obligated to update this Policy. However, if we introduce features that significantly change our data handling practices, we may revise this Policy accordingly.
+
+For the avoidance of doubt, we reserve the right to modify this Policy at any time.
 
 ## Changes to This Policy
 
