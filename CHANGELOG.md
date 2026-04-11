@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v21.0] - 2026-04-11 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v20.0...linkumori-v21.0))
+### Changed
+- Add missing translations and updated existing ones for various locales list of added new translation am 	Amharic bg 	Bulgarian bn 	Bengali ca 	Catalan cs 	Czech da 	Danish el 	Greek en_GB 	English (UK) en_US 	English (US) es_419 	Spanish (Latin America) et 	Estonian fi 	Finnish fil 	Filipino gu 	Gujarati he 	Hebrew hi 	Hindi hr 	Croatian kn 	Kannada lt 	Lithuanian lv 	Latvian ml 	Malayalam mr 	Marathi nb 	Norwegian Bokmål or 	Oriya pt 	Portuguese (generic) ro 	Romanian sk 	Slovak sr 	Serbian sw 	Swahili ta 	Tamil te 	Telugu vi 	Vietnamese (`2026-04-11`, hash: [`a9b44a8`](https://github.com/Linkumori/Linkumori-Addon/commit/a9b44a8))
+- Downloaded latest public suffix list from upstream (`2026-04-11`, hash: [`f1a8e5e`](https://github.com/Linkumori/Linkumori-Addon/commit/f1a8e5e))
+- Update template.md also for clarification earlier commit didnot add portuguese generic (`2026-04-11`, hash: [`ef9ee5b`](https://github.com/Linkumori/Linkumori-Addon/commit/ef9ee5b))
+
 ## [v20.0] - 2026-04-10 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v19.0...linkumori-v20.0))
 ### Changed
 - Add more clarification in privacy policy (`2026-04-11`, hash: [`a0ec6cd`](https://github.com/Linkumori/Linkumori-Addon/commit/a0ec6cd))
