@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v23.0] - 2026-04-12 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v22.0...linkumori-v23.0))
+### Changed
+- Release v23.0 (hash: `a2f7674`).
+- Updated files:
+  - `manifest.json`
+
 ## [v22.0] - 2026-04-11 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v21.0...linkumori-v22.0))
 ### Changed
 - Normalize English privacy policy label across locales (`2026-04-11`, hash: [`b5795d7`](https://github.com/Linkumori/Linkumori-Addon/commit/b5795d7))
