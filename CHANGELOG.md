@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v25.0] - 2026-04-19 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v24.0...linkumori-v25.0))
+### Changed
+- Downloaded latest public suffix list from upstream (`2026-04-19`, hash: [`381248b`](https://github.com/Linkumori/Linkumori-Addon/commit/381248b))
+
 ## [v24.0] - 2026-04-12 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v23.0...linkumori-v24.0))
 ### Changed
 - Normalize privacy policy placeholders in locales (`2026-04-12`, hash: [`93ad3f4`](https://github.com/Linkumori/Linkumori-Addon/commit/93ad3f4))
