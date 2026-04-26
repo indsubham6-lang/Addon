@@ -79,6 +79,7 @@ var localDataHash;
 var os;
 var initializationComplete = false;
 var linkumoriPatternRegexCache = new Map();
+var clearurlsWebRequestHandler = null;
 var pslSupport = {
     status: 'idle',
     parser: null,
@@ -1458,11 +1459,11 @@ function start() {
     }
 
     function setupWebRequestListener() {
-        if (browser.webRequest.onBeforeRequest.hasListener(promise)) {
+        if (clearurlsWebRequestHandler && browser.webRequest.onBeforeRequest.hasListener(clearurlsWebRequestHandler)) {
             return;
         }
 
-        function promise(requestDetails) {
+        clearurlsWebRequestHandler = function (requestDetails) {
             if (requestDetails && requestDetails.tabId >= 0) {
                 if (requestDetails.type === 'main_frame') {
                     requestContextManager.setTabURL(requestDetails.tabId, requestDetails.url);
@@ -1481,7 +1482,7 @@ function start() {
             } else {
                 return clearUrl(requestDetails);
             }
-        }
+        };
 
         function isDataURL(requestDetails) {
             const s = requestDetails.url;
@@ -1489,7 +1490,7 @@ function start() {
         }
 
         browser.webRequest.onBeforeRequest.addListener(
-            promise,
+            clearurlsWebRequestHandler,
             {urls: ["<all_urls>"], types: getData("types").concat(getData("pingRequestTypes"))},
             ["blocking"]
         );
@@ -1878,6 +1879,10 @@ function start() {
                         redirectUrl: result.url
                     };
                 }
+            }
+
+            if (typeof globalThis.handleLinkumoriURLFilterRequest === 'function') {
+                return globalThis.handleLinkumoriURLFilterRequest(request);
             }
         }
 

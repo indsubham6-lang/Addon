@@ -22,9 +22,10 @@
  * -----------
  * Linkumori URL Filter Runtime
  *
- * Separate runtime for LinkumoriURLsData. This intentionally does not modify
- * ClearURLs providers or clearurls.js. It only applies popular extension
- * $removeparam/$queryprune URL tracking filters stored in LinkumoriURLsData.
+ * Runtime support for LinkumoriURLsData. It intentionally keeps the
+ * LinkumoriURLsData parsing/compilation logic separate from ClearURLs provider
+ * parsing, while delegating actual webRequest interception to the single
+ * onBeforeRequest listener registered in clearurls.js.
  *
  * ============================================================
  * MODIFICATION HISTORY
@@ -774,19 +775,10 @@ function startLinkumoriURLFilterRuntime() {
         return true;
     }
 
-    if (!browser || !browser.webRequest || !browser.webRequest.onBeforeRequest) {
-        return false;
-    }
-
-    browser.webRequest.onBeforeRequest.addListener(
-        handleLinkumoriURLFilterRequest,
-        { urls: ['<all_urls>'], types: getData('types').concat(getData('pingRequestTypes')) },
-        ['blocking']
-    );
-
     linkumoriURLFilterRuntime.started = true;
     return true;
 }
 
 globalThis.startLinkumoriURLFilterRuntime = startLinkumoriURLFilterRuntime;
 globalThis.updateLinkumoriURLFilterRuntimeData = rebuildLinkumoriURLFilterRuntimeData;
+globalThis.handleLinkumoriURLFilterRequest = handleLinkumoriURLFilterRequest;
