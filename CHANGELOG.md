@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - No unreleased commit entries.
 
+## [v30.0] - 2026-04-26 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v29.0...linkumori-v30.0))
+### Fixed
+- Resolve translation (`2026-04-26`, hash: [`2e637be`](https://github.com/Linkumori/Linkumori-Addon/commit/2e637be))
+
 ## [v29.0] - 2026-04-26 ([compare](https://github.com/Linkumori/Linkumori-Addon/compare/linkumori-v28.0...linkumori-v29.0))
 ### Added
 - **url-filters**: Introduce Linkumori URL filter interoperability runtime (`2026-04-26`, hash: [`360ca4c`](https://github.com/Linkumori/Linkumori-Addon/commit/360ca4c))
