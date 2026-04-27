@@ -64,8 +64,8 @@
     'use strict';
 
     const PROVIDER_NAME = 'linkumori-url-filter-interoperability-filter';
-    const DEFAULT_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
     const NOOP_MODIFIERS = new Set(['_', 'noop', 'stealth', 'cookie']);
+    const REMOVE_PARAM_RULE_PATTERN = /\$(?:[^,\s]*,)*(?:removeparam|queryprune)(?:[=,\s]|$)/i;
     const CONTENT_TYPE_TO_REQUEST_TYPE = {
         document: ['main_frame'],
         doc: ['main_frame'],
@@ -325,8 +325,7 @@
             includeApps: [],
             excludeApps: [],
             includeAppRegexes: [],
-            excludeAppRegexes: [],
-            appNames: []
+            excludeAppRegexes: []
         };
 
         let removeParamToken = null;
@@ -440,7 +439,6 @@
                     parsed.includeAppRegexes,
                     parsed.excludeAppRegexes
                 );
-                parsed.appNames = parsed.includeApps;
                 return;
             }
 
@@ -701,6 +699,11 @@
     }
 
     function createRequestMatchContext(fullUrl, request) {
+        const ContextClass = globalThis.LinkumoriFilteringContext;
+        if (ContextClass && typeof ContextClass.create === 'function') {
+            return ContextClass.create(fullUrl, request, getRegistrableDomain);
+        }
+
         const targetHost = getHostname(fullUrl);
         const registrableDomainCache = Object.create(null);
 
@@ -716,6 +719,8 @@
             requestType: request && typeof request.type === 'string'
                 ? request.type
                 : '',
+            requestMethodBit: 0,
+            requestTypeBit: 0,
             appName: normalizeHostname(request && typeof request.appName === 'string' ? request.appName : ''),
             registrableDomain(hostname) {
                 const normalized = normalizeHostname(hostname);
@@ -943,6 +948,25 @@
     }
 
     function matchesMethod(rule, context) {
+        const ContextClass = globalThis.LinkumoriFilteringContext;
+        if (ContextClass) {
+            const requestMethodBit = context.requestMethodBit || 0;
+            const includeMask = rule._linkumoriIncludeMethodMask || 0;
+            const excludeMask = rule._linkumoriExcludeMethodMask || 0;
+
+            if (includeMask !== 0 && (requestMethodBit === 0 || (includeMask & requestMethodBit) === 0)) {
+                return false;
+            }
+            if (excludeMask !== 0 && requestMethodBit !== 0 && (excludeMask & requestMethodBit) !== 0) {
+                return false;
+            }
+            if (includeMask === 0 && requestMethodBit !== 0 && (ContextClass.DEFAULT_METHOD_MASK & requestMethodBit) === 0) {
+                return false;
+            }
+
+            return true;
+        }
+
         const requestMethod = context.requestMethod;
         if (rule.includeMethods.length > 0 && !rule.includeMethods.includes(requestMethod)) {
             return false;
@@ -950,7 +974,7 @@
         if (rule.excludeMethods.length > 0 && rule.excludeMethods.includes(requestMethod)) {
             return false;
         }
-        if (rule.includeMethods.length === 0 && requestMethod && !DEFAULT_METHODS.has(requestMethod)) {
+        if (rule.includeMethods.length === 0 && requestMethod && !['GET', 'HEAD', 'OPTIONS'].includes(requestMethod)) {
             return false;
         }
 
@@ -958,6 +982,23 @@
     }
 
     function matchesResourceType(rule, context) {
+        const requestTypeBit = context.requestTypeBit || 0;
+        const includeMask = rule._linkumoriIncludeResourceTypeMask || 0;
+        const excludeMask = rule._linkumoriExcludeResourceTypeMask || 0;
+
+        if (includeMask !== 0 && (requestTypeBit === 0 || (includeMask & requestTypeBit) === 0)) {
+            return false;
+        }
+        if (excludeMask !== 0 && requestTypeBit !== 0 && (excludeMask & requestTypeBit) !== 0) {
+            return false;
+        }
+        if (includeMask === 0 && excludeMask === 0) {
+            return !context.requestType || context.requestType === 'main_frame';
+        }
+
+        return true;
+
+        /*
         const requestType = context.requestType;
         if (rule.includeResourceTypes.length > 0 && !rule.includeResourceTypes.includes(requestType)) {
             return false;
@@ -970,6 +1011,7 @@
         }
 
         return true;
+        */
     }
 
     function matchesAppModifier(rule, context) {
@@ -1009,6 +1051,25 @@
     function prepareRule(rule) {
         if (!rule) return rule;
         getUrlPatternMatcher(rule);
+        const ContextClass = globalThis.LinkumoriFilteringContext;
+        if (ContextClass) {
+            rule._linkumoriIncludeMethodMask = ContextClass.buildMask(
+                rule.includeMethods,
+                ContextClass.getMethodBit
+            );
+            rule._linkumoriExcludeMethodMask = ContextClass.buildMask(
+                rule.excludeMethods,
+                ContextClass.getMethodBit
+            );
+            rule._linkumoriIncludeResourceTypeMask = ContextClass.buildMask(
+                rule.includeResourceTypes,
+                ContextClass.getResourceTypeBit
+            );
+            rule._linkumoriExcludeResourceTypeMask = ContextClass.buildMask(
+                rule.excludeResourceTypes,
+                ContextClass.getResourceTypeBit
+            );
+        }
         return rule;
     }
 
@@ -1056,23 +1117,36 @@
         const seen = new Set();
         let unsupportedRuleCount = 0;
         let duplicateRuleCount = 0;
+        const sourceText = String(text || '');
+        let lineStart = 0;
 
-        String(text || '').split(/\r?\n/).forEach(line => {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('!') || trimmed.startsWith('[')) return;
-            if (!/\$(?:[^,\s]*,)*(?:removeparam|queryprune)(?:[=,\s]|$)/i.test(trimmed)) return;
+        while (lineStart <= sourceText.length) {
+            let lineEnd = sourceText.indexOf('\n', lineStart);
+            if (lineEnd === -1) {
+                lineEnd = sourceText.length;
+            }
+
+            let rawLine = sourceText.slice(lineStart, lineEnd);
+            if (rawLine.endsWith('\r')) {
+                rawLine = rawLine.slice(0, -1);
+            }
+            lineStart = lineEnd + 1;
+
+            const trimmed = rawLine.trim();
+            if (!trimmed || trimmed.startsWith('!') || trimmed.startsWith('[')) continue;
+            if (!REMOVE_PARAM_RULE_PATTERN.test(trimmed)) continue;
             if (!parseRemoveParamRule(trimmed)) {
                 unsupportedRuleCount++;
-                return;
+                continue;
             }
             if (seen.has(trimmed)) {
                 duplicateRuleCount++;
-                return;
+                continue;
             }
 
             seen.add(trimmed);
             rules.push(trimmed);
-        });
+        }
 
         if (rules.length === 0) {
             throw new Error(i18n('linkumori_url_filter_no_supported_rules'));
@@ -1097,7 +1171,7 @@
     }
 
     function looksLikeFilterList(text) {
-        return /\$(?:[^,\s]*,)*(?:removeparam|queryprune)(?:[=,\s]|$)/i.test(String(text || ''));
+        return REMOVE_PARAM_RULE_PATTERN.test(String(text || ''));
     }
 
     globalThis.LinkumoriURLFilterInteroperability = {

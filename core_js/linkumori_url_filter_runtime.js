@@ -64,7 +64,11 @@ var linkumoriURLFilterRuntime = {
     started: false,
     rules: [],
     exceptions: [],
-    compiled: null
+    compiled: null,
+    lastDataRef: null,
+    lastRulesRef: null,
+    lastDataVersion: null,
+    lastRuleCount: 0
 };
 
 function linkumoriURLFilterRuntimeI18n(key, substitutions = []) {
@@ -225,6 +229,14 @@ function chooseLinkumoriURLFilterIndexToken(rule, tokenFrequency) {
     })[0];
 }
 
+function countLinkumoriURLFilterTokenFrequency(rule, tokenFrequency) {
+    const tokens = getLinkumoriURLFilterIndexTokenCandidates(rule);
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        tokenFrequency[token] = (tokenFrequency[token] || 0) + 1;
+    }
+}
+
 function compileLinkumoriURLFilterRules(rules, exceptions) {
     const compiled = {
         rules: createLinkumoriURLFilterBuckets(),
@@ -233,24 +245,25 @@ function compileLinkumoriURLFilterRules(rules, exceptions) {
     const tokenFrequency = Object.create(null);
     let ruleId = 0;
 
-    rules.concat(exceptions).forEach(rule => {
-        rule._linkumoriRuleId = ++ruleId;
-        rule._linkumoriIndexTokenCandidates = getLinkumoriURLFilterIndexTokenCandidates(rule);
-        rule._linkumoriIndexTokenCandidates.forEach(token => {
-            tokenFrequency[token] = (tokenFrequency[token] || 0) + 1;
-        });
-    });
-
     rules.forEach(rule => {
-        const token = chooseLinkumoriURLFilterIndexToken(rule, tokenFrequency);
-        rule._linkumoriIndexToken = token || '';
-        addLinkumoriURLFilterRuleToBuckets(compiled.rules, rule, token);
+        rule._linkumoriRuleId = ++ruleId;
+        countLinkumoriURLFilterTokenFrequency(rule, tokenFrequency);
     });
     exceptions.forEach(rule => {
-        const token = chooseLinkumoriURLFilterIndexToken(rule, tokenFrequency);
-        rule._linkumoriIndexToken = token || '';
-        addLinkumoriURLFilterRuleToBuckets(compiled.exceptions, rule, token);
+        rule._linkumoriRuleId = ++ruleId;
+        countLinkumoriURLFilterTokenFrequency(rule, tokenFrequency);
     });
+
+    for (let i = 0; i < rules.length; i++) {
+        const rule = rules[i];
+        const token = chooseLinkumoriURLFilterIndexToken(rule, tokenFrequency);
+        addLinkumoriURLFilterRuleToBuckets(compiled.rules, rule, token);
+    }
+    for (let i = 0; i < exceptions.length; i++) {
+        const rule = exceptions[i];
+        const token = chooseLinkumoriURLFilterIndexToken(rule, tokenFrequency);
+        addLinkumoriURLFilterRuleToBuckets(compiled.exceptions, rule, token);
+    }
 
     return compiled;
 }
@@ -259,9 +272,23 @@ function rebuildLinkumoriURLFilterRuntimeData() {
     const parser = globalThis.LinkumoriURLFilterInteroperability;
     const data = storage && storage.LinkumoriURLsData ? storage.LinkumoriURLsData : null;
     const rawRules = Array.isArray(data && data.rules) ? data.rules : [];
-    const parsedRules = [];
     const badfilterTargets = new Set();
-    const seenCanonicalRules = new Set();
+    const retainedRulesByCanonical = new Map();
+    const dataVersion = data && data.metadata && typeof data.metadata.version === 'string'
+        ? data.metadata.version
+        : null;
+
+    if (
+        data &&
+        rawRules &&
+        linkumoriURLFilterRuntime.lastDataRef === data &&
+        linkumoriURLFilterRuntime.lastRulesRef === rawRules &&
+        linkumoriURLFilterRuntime.lastDataVersion === dataVersion &&
+        linkumoriURLFilterRuntime.lastRuleCount === rawRules.length &&
+        linkumoriURLFilterRuntime.compiled
+    ) {
+        return true;
+    }
 
     linkumoriURLFilterRuntime.rules = [];
     linkumoriURLFilterRuntime.exceptions = [];
@@ -281,19 +308,18 @@ function rebuildLinkumoriURLFilterRuntimeData() {
         if (parsedRule.isBadfilter) {
             if (parsedRule.badfilterTarget) {
                 badfilterTargets.add(parsedRule.badfilterTarget);
+                retainedRulesByCanonical.delete(parsedRule.badfilterTarget);
             }
             return;
         }
 
-        if (seenCanonicalRules.has(parsedRule.canonical)) {
+        if (retainedRulesByCanonical.has(parsedRule.canonical)) {
             return;
         }
-        seenCanonicalRules.add(parsedRule.canonical);
-
-        parsedRules.push(parsedRule);
+        retainedRulesByCanonical.set(parsedRule.canonical, parsedRule);
     });
 
-    parsedRules.forEach(parsedRule => {
+    retainedRulesByCanonical.forEach(parsedRule => {
         if (badfilterTargets.has(parsedRule.raw) || badfilterTargets.has(parsedRule.canonical)) {
             return;
         }
@@ -309,6 +335,10 @@ function rebuildLinkumoriURLFilterRuntimeData() {
         linkumoriURLFilterRuntime.rules,
         linkumoriURLFilterRuntime.exceptions
     );
+    linkumoriURLFilterRuntime.lastDataRef = data;
+    linkumoriURLFilterRuntime.lastRulesRef = rawRules;
+    linkumoriURLFilterRuntime.lastDataVersion = dataVersion;
+    linkumoriURLFilterRuntime.lastRuleCount = rawRules.length;
 
     return true;
 }
@@ -375,12 +405,13 @@ function isLinkumoriURLFilterWhitelisted(requestDetails) {
 
 function pushUniqueLinkumoriURLFilterRules(target, seen, source) {
     if (!Array.isArray(source)) return;
-    source.forEach(rule => {
+    for (let i = 0; i < source.length; i++) {
+        const rule = source[i];
         const key = rule && rule._linkumoriRuleId ? rule._linkumoriRuleId : (rule && rule.raw ? rule.raw : rule);
-        if (seen.has(key)) return;
+        if (seen.has(key)) continue;
         seen.add(key);
         target.push(rule);
-    });
+    }
 }
 
 function getLinkumoriURLFilterHostname(rawUrl) {
