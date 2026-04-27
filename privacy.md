@@ -1,6 +1,6 @@
 # Linkumori Privacy Policy
 
-**Last Updated:** April 24, 2026
+**Last Updated:** April 27, 2026
 
 Linkumori is a free, non-commercial, open-source tool.
 
@@ -142,6 +142,8 @@ By installing and using this Add-on, you ("the **Recipient of this Add-on**") ac
 This Privacy Policy applies to the fullest extent permitted by applicable law, provided that it remains compatible with the software license governing this Add-on. In the event of any conflict or inconsistency between this Privacy Policy and the software license, the terms of the software license shall prevail to the extent of such conflict.
 
 For the avoidance of doubt, all first-party and third-party licenses applicable to this Add-on or any of its components continue to apply in full and are not superseded, waived, or modified by this Privacy Policy. The Recipient of this Add-on remains bound by all such licenses independently of, and in addition to, the terms set forth herein.
+
+This Add-on is developed primarily with reference to the laws of the Republic of India. Users in other jurisdictions are responsible for ensuring compliance with their local laws.
 
 ---
 

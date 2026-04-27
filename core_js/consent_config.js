@@ -34,6 +34,7 @@
  * 2026-04-01   Subham Mahesh   Bumped policy version from 1 to 2.
  * 2026-4-11  Subham Mahesh   Bumped policy version from 2 to 3.
   2026-04-24   Subham Mahesh   Bump internal policy tracking from 3 to 4.
+   2026-04-27   Subham Mahesh   Bump internal policy tracking from 4 to 5.
  * Note: Due to inline constraints, subsequent modifications may
  * not appear here. To view the full history, run:
  *
@@ -63,6 +64,6 @@
  * ============================================================
  */
 
-const Linkumoriversion = 4;
+const Linkumoriversion = 5;
 
 globalThis.Linkumoriversion = Linkumoriversion;
