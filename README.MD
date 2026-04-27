@@ -96,13 +96,7 @@ All required permissions are explained in [SECURITY.md](SECURITY.md). The short 
 
 ## Rules
 
-Built-in rules ship with the extension and are updated with each release. Remote rules are fetched from:
-
-```
-https://raw.githubusercontent.com/Linkumori/Linkumori-Addon/main/data/linkumori-clearurls-min.json
-```
-
-You can also load your own rule sources or disable any rule you don't want.
+Built-in rules ship with the extension and are updated with each release.
 
 For syntax and compatibility details, see [INTEROPERABILITY.md](INTEROPERABILITY.md) for:
 - the ClearURLs provider format
